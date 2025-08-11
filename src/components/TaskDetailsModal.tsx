@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useCommentCount, useComments } from '@/hooks/useComments';
-import { useTasks, useTaskOperations } from '@/hooks/useTasks';
+import { useTaskOperations, useTasks } from '@/hooks/useTasks';
 import { Comment, List, Task } from '@/types';
 import {
   AlertTriangle,
@@ -50,24 +50,27 @@ export default function TaskDetailsModal({
     description: task.description || '',
     priority: task.priority,
     dueDate: task.due_date ? task.due_date.split('T')[0] : '',
-    status: task.status
+    status: lists.find(list => list.title.toLowerCase().replace(/\s+/g, '_') === task.status.toLowerCase())?.title || task.status,
   });
 
   const { updateTask, isUpdating } = useTasks();
   const { deleteTask, isDeleting } = useTaskOperations();
-  const { comments, createComment, updateComment, deleteComment, isCreating, isUpdating: isUpdatingComment, isDeleting: isDeletingComment } = useComments(task.id);
+  const { comments, createComment, isCreating } = useComments(task.id);
   const { data: commentCount = 0 } = useCommentCount(task.id);
 
-  // Reset edit data when task changes
   useEffect(() => {
+    const matchingList = lists.find(list =>
+      list.title.toLowerCase().replace(/\s+/g, '_') === task.status.toLowerCase()
+    );
     setEditData({
       title: task.title,
       description: task.description || '',
       priority: task.priority,
       dueDate: task.due_date ? task.due_date.split('T')[0] : '',
-      status: task.status
+      status: matchingList ? matchingList.title : task.status
     });
   }, [task]);
+
 
   const handleSave = async () => {
     try {
@@ -105,12 +108,12 @@ export default function TaskDetailsModal({
     try {
       // Use the deleteTask function from the hook
       await deleteTask(task.id);
-      
+
       // Also call the parent callback if provided
       if (onTaskDelete) {
         await onTaskDelete(task.id);
       }
-      
+
       setIsDeleteOpen(false);
       onClose();
     } catch (error) {
