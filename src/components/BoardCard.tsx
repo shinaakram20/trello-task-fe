@@ -109,9 +109,6 @@ export default function BoardCard({ board }: BoardCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleView}>
-                  View Board
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleEdit}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Board
