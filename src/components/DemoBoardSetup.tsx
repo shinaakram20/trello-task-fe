@@ -30,28 +30,29 @@ const defaultLists = [
 ];
 
 export default function DemoBoardSetup({ boardId, onComplete }: DemoBoardSetupProps) {
+  const { createListAsync, isCreating } = useLists(boardId);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [createdLists, setCreatedLists] = useState<string[]>([]);
-  const { createList, isCreating } = useLists(boardId);
 
   const handleSetupDemo = async () => {
     setIsSettingUp(true);
-    
+    setCreatedLists([]);
+
     try {
       for (const list of defaultLists) {
-        const newList = await createList({
+        const newList = await createListAsync({
           title: list.title,
           boardId: boardId
         });
-        
-        if (newList) {
-          setCreatedLists(prev => [...prev, newList.id]);
+
+        if (newList && newList.data && newList.data.id) {
+          setCreatedLists(prev => [...prev, newList.data.id]);
         }
-        
+
         // Small delay to show progress
         await new Promise(resolve => setTimeout(resolve, 500));
       }
-      
+
       onComplete();
     } catch (error) {
       console.error('Error setting up demo board:', error);
@@ -81,7 +82,7 @@ export default function DemoBoardSetup({ boardId, onComplete }: DemoBoardSetupPr
           Let's get you started with a basic setup. You can always customize this later.
         </p>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Preview of what will be created */}
         <div className="space-y-3">
@@ -135,7 +136,7 @@ export default function DemoBoardSetup({ boardId, onComplete }: DemoBoardSetupPr
               </>
             )}
           </Button>
-          
+
           <Button
             variant="outline"
             onClick={onComplete}
@@ -150,7 +151,7 @@ export default function DemoBoardSetup({ boardId, onComplete }: DemoBoardSetupPr
         {isSettingUp && (
           <div className="text-center">
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${(createdLists.length / defaultLists.length) * 100}%` }}
               />
