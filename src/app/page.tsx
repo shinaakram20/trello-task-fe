@@ -55,9 +55,6 @@ export default function HomePage() {
                 Organize your work and collaborate with your team
               </p>
             </div>
-            <Button variant="outline" asChild>
-              <a href="/sweetalert-demo">SweetAlert2 Demo</a>
-            </Button>
           </div>
         </div>
 
