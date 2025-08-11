@@ -23,7 +23,7 @@ import TaskDialog from './TaskDialog';
 interface DroppableListProps {
   list: List;
   tasks: Task[];
-  lists: List[]; 
+  lists: List[];
   onEditList: (id: string, data: Partial<List>) => void;
   onDeleteList: (id: string) => void;
   onTaskMove: (taskId: string, newListId: string, newPosition?: number) => void;
@@ -73,11 +73,17 @@ export default function DroppableList({
   };
 
   const handleDelete = () => {
+    console.log('handleDelete');
     setIsDeleteOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    onDeleteList(list.id);
+  const handleConfirmDelete = async () => {
+    try {
+      await onDeleteList(list.id);
+      setIsDeleteOpen(false);
+    } catch (error) {
+      console.error('Failed to delete list:', error);
+    }
   };
 
   const handleAddTask = () => {
@@ -97,10 +103,14 @@ export default function DroppableList({
   const handleConfirmDeleteTask = async () => {
     if (deleteTaskId) {
       try {
+        console.log('Confirming task deletion for:', deleteTaskId);
         await deleteTask(deleteTaskId);
+        console.log('Task deletion completed, clearing deleteTaskId');
         setDeleteTaskId(null);
       } catch (error) {
         console.error('Failed to delete task:', error);
+        // Keep the dialog open on error so user can try again
+        // Don't clear deleteTaskId on error
       }
     }
   };
@@ -278,24 +288,23 @@ export default function DroppableList({
                         <DraggableTask
                           task={task}
                           onEdit={handleEditTask}
-                          onDelete={handleConfirmDeleteTask}
+                          onDelete={() => setDeleteTaskId(task.id)}
                           lists={lists}
                           isMoving={isMoving}
                           isUpdatingPosition={isUpdatingPosition}
                         />
+
                         {/* Drop zone between tasks */}
                         {index < tasks.length - 1 && (
-                          <div className={`h-2 rounded transition-colors duration-200 ${
-                            (isMoving || isUpdatingPosition) ? 'bg-blue-200 animate-pulse' : 'bg-transparent hover:bg-blue-100'
-                          }`} />
+                          <div className={`h-2 rounded transition-colors duration-200 ${(isMoving || isUpdatingPosition) ? 'bg-blue-200 animate-pulse' : 'bg-transparent hover:bg-blue-100'
+                            }`} />
                         )}
                       </div>
                     ))}
 
                     {/* Bottom drop zone */}
-                    <div className={`h-2 rounded transition-colors duration-200 ${
-                      (isMoving || isUpdatingPosition) ? 'bg-blue-200 animate-pulse' : 'bg-transparent hover:bg-blue-100'
-                    }`} />
+                    <div className={`h-2 rounded transition-colors duration-200 ${(isMoving || isUpdatingPosition) ? 'bg-blue-200 animate-pulse' : 'bg-transparent hover:bg-blue-100'
+                      }`} />
                   </>
                 )}
               </div>

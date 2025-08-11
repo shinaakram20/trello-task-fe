@@ -22,7 +22,7 @@ import {
   SortableContext,
 } from '@dnd-kit/sortable';
 import { useState, useMemo } from 'react';
-import DraggableTask from './DraggableTask';
+
 import SortableList from './SortableList';
 
 interface DndBoardProps {
@@ -317,14 +317,34 @@ export default function DndBoard({ boardId }: DndBoardProps) {
       <DragOverlay>
         {activeTask ? (
           <div className="w-80 h-full">
-            <DraggableTask
-              task={activeTask}
-              onEdit={() => { }}
-              onDelete={() => { }}
-              lists={lists}
-              isMoving={isMoving}
-              isUpdatingPosition={isUpdatingPosition}
-            />
+            {/* Simplified task display for drag overlay - no interactive elements */}
+            <div className="h-fit min-h-[120px] max-h-[200px] bg-white shadow-2xl rounded-lg border-2 border-blue-400 opacity-95 transform rotate-1 relative">
+              <div className="p-4 border-b bg-blue-50">
+                <h3 className="font-semibold text-gray-900 flex items-center">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  {activeTask.title}
+                </h3>
+              </div>
+              <div className="p-4">
+                {activeTask.description && (
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {activeTask.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    activeTask.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    activeTask.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {activeTask.priority}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {activeTask.status}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         ) : activeList ? (
           <div className="w-80 h-full">
