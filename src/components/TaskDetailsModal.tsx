@@ -153,7 +153,16 @@ export default function TaskDetailsModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col relative">
+          {/* Loading Overlay */}
+          {isUpdating && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-blue-600 font-medium">Updating task...</span>
+              </div>
+            </div>
+          )}
           <DialogHeader className="flex-shrink-0">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -421,7 +430,14 @@ export default function TaskDetailsModal({
                     disabled={isCreating}
                     className="self-end"
                   >
-                    {isCreating ? 'Adding...' : 'Add'}
+                    {isCreating ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Adding...</span>
+                      </div>
+                    ) : (
+                      'Add'
+                    )}
                   </Button>
                 </div>
               </CardHeader>
@@ -476,11 +492,18 @@ export default function TaskDetailsModal({
           {/* Footer Actions */}
           {isEditing && (
             <div className="flex-shrink-0 flex justify-end space-x-2 pt-4 border-t">
-              <Button variant="outline" onClick={handleCancelEdit}>
+              <Button variant="outline" onClick={handleCancelEdit} disabled={isUpdating}>
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={isUpdating || !editData.title.trim()}>
-                {isUpdating ? 'Saving...' : 'Save Changes'}
+                {isUpdating ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Saving...</span>
+                  </div>
+                ) : (
+                  'Save Changes'
+                )}
               </Button>
             </div>
           )}

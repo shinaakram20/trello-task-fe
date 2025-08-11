@@ -166,11 +166,26 @@ export default function DroppableList({
       <Card
         ref={setNodeRef}
         className={`
-          group h-full min-h-[340px] max-h-[340px] overflow-y-auto transition-all duration-200
+          group h-full min-h-[340px] max-h-[340px] overflow-y-auto transition-all duration-200 relative
           ${statusColors[listStatus]}
           ${isOver ? 'ring-2 ring-blue-400 ring-opacity-50 shadow-lg' : 'shadow-sm hover:shadow-md'}
         `}
       >
+        {/* Loading Overlay */}
+        {(isCreating || isUpdating || isDeleting || isMoving || isUpdatingPosition) && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-blue-600 font-medium text-sm">
+                {isCreating ? 'Creating task...' :
+                 isUpdating ? 'Updating task...' :
+                 isDeleting ? 'Deleting task...' :
+                 isMoving ? 'Moving task...' :
+                 isUpdatingPosition ? 'Updating position...' : 'Processing...'}
+              </span>
+            </div>
+          </div>
+        )}
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">

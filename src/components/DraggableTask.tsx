@@ -211,7 +211,11 @@ export default function DraggableTask({ task, onEdit, onDelete, lists, isMoving 
             title="Comments"
             disabled={isMoving || isUpdatingPosition}
           >
-            <MessageSquare className="h-3 w-3" />
+            {isCreating || isUpdating || isDeleting ? (
+              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <MessageSquare className="h-3 w-3" />
+            )}
           </Button>
           <Button
             variant="ghost"
@@ -225,12 +229,28 @@ export default function DraggableTask({ task, onEdit, onDelete, lists, isMoving 
             title="Delete Task"
             disabled={isMoving || isUpdatingPosition}
           >
-            <Trash2 className="h-3 w-3" />
+            {isDeleting ? (
+              <div className="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Trash2 className="h-3 w-3" />
+            )}
           </Button>
         </div>
       </div>
 
       {/* Drag handle indicator */}
+      {/* Task Loading Overlay */}
+      {(isMoving || isUpdatingPosition) && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-blue-600 font-medium">
+              {isMoving ? 'Moving...' : 'Updating...'}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="mt-2 pt-2 border-t border-gray-100">
         <div className="flex justify-center">
           <div

@@ -42,7 +42,8 @@ export default function TaskDialog({
     title: '',
     description: '',
     listId: listId,
-    priority: 'medium'
+    priority: 'medium',
+    dueDate: new Date().toISOString().split('T')[0] // Default to today
   });
 
   const [status, setStatus] = useState<string>(getInitialStatus());
@@ -65,6 +66,7 @@ export default function TaskDialog({
         description: '',
         listId: listId,
         priority: 'medium',
+        dueDate: new Date().toISOString().split('T')[0] // Default to today
       });
       setStatus(getInitialStatus());
     }

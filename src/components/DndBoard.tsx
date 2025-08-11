@@ -313,6 +313,21 @@ export default function DndBoard({ boardId }: DndBoardProps) {
         </div>
       </SortableContext>
 
+      {/* Loading Overlay for Task Operations */}
+      {(isMoving || isUpdatingPosition) && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {isMoving ? 'Moving Task...' : 'Updating Position...'}
+              </h3>
+              <p className="text-sm text-gray-600">Please wait while we update the task</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Drag Overlay */}
       <DragOverlay>
         {activeTask ? (
