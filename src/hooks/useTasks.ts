@@ -21,7 +21,7 @@ export const useTasks = (listId?: string, boardId?: string) => {
       } else {
         const response = await tasksApi.getAll();
         return response.data;
-      }
+      } 
     },
     enabled: !!listId || !!boardId || (listId === undefined && boardId === undefined),
   });
@@ -66,21 +66,43 @@ export const useTasks = (listId?: string, boardId?: string) => {
   const deleteTaskMutation = useMutation({
     mutationFn: (id: string) => tasksApi.delete(id),
     onSuccess: (_, id) => {
+      console.log('Task deleted successfully, updating cache for:', id);
+      
+      // Remove the task from all relevant caches immediately
       queryClient.setQueryData(['tasks', listId, boardId], (old: Task[] | undefined) => {
         if (!old) return old;
-        return old.filter(task => task.id !== id);
+        const filtered = old.filter(task => task.id !== id);
+        console.log('Updated tasks cache:', { before: old.length, after: filtered.length });
+        return filtered;
       });
-      // Also invalidate to ensure consistency
+      
+      // Also update the general tasks cache
+      queryClient.setQueryData(['tasks'], (old: Task[] | undefined) => {
+        if (!old) return old;
+        const filtered = old.filter(task => task.id !== id);
+        console.log('Updated general tasks cache:', { before: old.length, after: filtered.length });
+        return filtered;
+      });
+      
+      // Invalidate all related queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       if (listId) {
         queryClient.invalidateQueries({ queryKey: ['tasks', listId] });
       }
       if (boardId) {
         queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
       }
+      
+      // Also invalidate lists to refresh task counts
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      if (boardId) {
+        queryClient.invalidateQueries({ queryKey: ['lists', boardId] });
+      }
     },
     onError: (error, id) => {
       console.error('Failed to delete task:', id, error);
-      throw error; // Re-throw to be handled by the component
+      // Re-throw to be handled by the component
+      throw error;
     },
   });
 
@@ -164,4 +186,33 @@ export const useTask = (id: string) => {
     },
     enabled: !!id,
   });
+};
+
+export const useTaskOperations = () => {
+  const queryClient = useQueryClient();
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (id: string) => tasksApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateTaskData }) =>
+      tasksApi.update(id, data),
+    onSuccess: () => {
+      // Invalidate all task queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
+  return {
+    deleteTask: deleteTaskMutation.mutate,
+    deleteTaskAsync: deleteTaskMutation.mutateAsync,
+    updateTask: updateTaskMutation.mutate,
+    updateTaskAsync: updateTaskMutation.mutateAsync,
+    isDeleting: deleteTaskMutation.isPending,
+    isUpdating: updateTaskMutation.isPending,
+  };
 };

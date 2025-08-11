@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useCommentCount, useComments } from '@/hooks/useComments';
-import { useTasks } from '@/hooks/useTasks';
+import { useTasks, useTaskOperations } from '@/hooks/useTasks';
 import { Comment, List, Task } from '@/types';
 import {
   AlertTriangle,
@@ -54,6 +54,7 @@ export default function TaskDetailsModal({
   });
 
   const { updateTask, isUpdating } = useTasks();
+  const { deleteTask, isDeleting } = useTaskOperations();
   const { comments, createComment, updateComment, deleteComment, isCreating, isUpdating: isUpdatingComment, isDeleting: isDeletingComment } = useComments(task.id);
   const { data: commentCount = 0 } = useCommentCount(task.id);
 
@@ -101,10 +102,20 @@ export default function TaskDetailsModal({
   };
 
   const handleDelete = async () => {
-    if (onTaskDelete) {
-      await onTaskDelete(task.id);
+    try {
+      // Use the deleteTask function from the hook
+      await deleteTask(task.id);
+      
+      // Also call the parent callback if provided
+      if (onTaskDelete) {
+        await onTaskDelete(task.id);
+      }
+      
       setIsDeleteOpen(false);
       onClose();
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      // Keep the delete confirmation dialog open if deletion fails
     }
   };
 
@@ -188,14 +199,28 @@ export default function TaskDetailsModal({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-
+                {!isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                    className="h-8 px-3 text-blue-600 border-blue-300 hover:bg-blue-50"
+                  >
+                    Edit
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsDeleteOpen(true)}
+                  disabled={isDeleting}
                   className="h-8 px-3 text-red-600 border-red-300 hover:bg-red-50"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {isDeleting ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
                 </Button>
                 <Button
                   variant="ghost"
@@ -499,6 +524,7 @@ export default function TaskDetailsModal({
         itemName={task.title}
         itemType="task"
         variant="danger"
+        isLoading={isDeleting}
       />
     </>
   );

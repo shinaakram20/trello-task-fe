@@ -21,7 +21,7 @@ import {
   horizontalListSortingStrategy,
   SortableContext,
 } from '@dnd-kit/sortable';
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import DraggableTask from './DraggableTask';
 import SortableList from './SortableList';
 
@@ -34,7 +34,14 @@ export default function DndBoard({ boardId }: DndBoardProps) {
   const { tasks, moveTask, updatePosition, updateTaskPositions, isMoving, isUpdatingPosition } = useTasks();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeList, setActiveList] = useState<List | null>(null);
-  const [listTasks, setListTasks] = useState<Record<string, Task[]>>({});
+  // Organize tasks by list - use useMemo instead of useEffect to prevent infinite loops
+  const listTasks = useMemo(() => {
+    const organized: Record<string, Task[]> = {};
+    lists.forEach((list: List) => {
+      organized[list.id] = tasks.filter((task: Task) => task.list_id === list.id);
+    });
+    return organized;
+  }, [lists, tasks]);
   const [deleteListId, setDeleteListId] = useState<string | null>(null);
   const [dragOverListId, setDragOverListId] = useState<string | null>(null);
 
@@ -45,15 +52,6 @@ export default function DndBoard({ boardId }: DndBoardProps) {
       },
     })
   );
-
-  // Organize tasks by list
-  useEffect(() => {
-    const organized: Record<string, Task[]> = {};
-    lists.forEach((list: List) => {
-      organized[list.id] = tasks.filter((task: Task) => task.list_id === list.id);
-    });
-    setListTasks(organized);
-  }, [lists, tasks]);
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
