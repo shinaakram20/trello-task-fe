@@ -43,6 +43,11 @@ export default function TaskDetailsModal({
   onTaskUpdate,
   onTaskDelete
 }: TaskDetailsModalProps) {
+  // Guard clause: don't render if no valid task
+  if (!task || !task.id) {
+    return null;
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: task.title,
@@ -153,7 +158,7 @@ export default function TaskDetailsModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col relative">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col relative" style={{ position: 'fixed' }}>
           {/* Loading Overlay */}
           {isUpdating && (
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
