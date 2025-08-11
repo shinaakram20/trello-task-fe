@@ -40,9 +40,7 @@ export default function DeleteConfirmation({
       onClose();
     } catch (error) {
       console.error('Error during deletion:', error);
-      // Show error to user
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Failed to delete ${itemType}: ${errorMessage}`);
+      // Error handling is done by the hooks with toast notifications
     } finally {
       setIsDeleting(false);
     }

@@ -44,7 +44,7 @@ export default function BoardCard({ board }: BoardCardProps) {
       await deleteBoard(board.id);
     } catch (error) {
       console.error('Failed to delete board:', error);
-      alert('Failed to delete board. Please try again.');
+      // Error handling is done by the hooks with toast notifications
     }
   };
 
@@ -63,7 +63,7 @@ export default function BoardCard({ board }: BoardCardProps) {
       setIsEditOpen(false);
     } catch (error) {
       console.error('Failed to update board:', error);
-      alert('Failed to update board. Please try again.');
+      // Error handling is done by the hooks with toast notifications
     }
   };
 

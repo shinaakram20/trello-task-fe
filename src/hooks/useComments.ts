@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { commentsApi } from '@/services/api';
+import { showSuccessToast, showErrorToast } from '@/lib/sweetalert';
+import React from 'react';
 
 export const useComments = (taskId: string) => {
   const queryClient = useQueryClient();
@@ -17,6 +19,13 @@ export const useComments = (taskId: string) => {
     enabled: !!taskId,
   });
 
+  // Show error toast when query fails
+  React.useEffect(() => {
+    if (error) {
+      showErrorToast("Error", "Failed to load comments. Please try again.");
+    }
+  }, [error]);
+
   const createCommentMutation = useMutation({
     mutationFn: (data: { content: string; userId?: string }) =>
       commentsApi.create({ taskId, ...data }),
@@ -25,6 +34,11 @@ export const useComments = (taskId: string) => {
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
       // Also invalidate comment count
       queryClient.invalidateQueries({ queryKey: ['commentCount', taskId] });
+      
+      showSuccessToast("Success", "Comment added successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to add comment. Please try again.");
     },
   });
 
@@ -34,16 +48,24 @@ export const useComments = (taskId: string) => {
     onSuccess: () => {
       // Invalidate and refetch comments for the task
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
+      
+      showSuccessToast("Success", "Comment updated successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to update comment. Please try again.");
     },
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: (id: string) => commentsApi.delete(id),
     onSuccess: () => {
-      // Invalidate and refetch comments for the task
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
-      // Also invalidate comment count
       queryClient.invalidateQueries({ queryKey: ['commentCount', taskId] });
+      
+      showSuccessToast("Success", "Comment deleted successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to delete comment. Please try again.");
     },
   });
 

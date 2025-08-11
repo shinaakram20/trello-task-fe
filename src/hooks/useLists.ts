@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listsApi } from '@/services/api';
 import { List, CreateListData, UpdateListData } from '@/types';
+import { showSuccessToast, showErrorToast } from '@/lib/sweetalert';
+import React from 'react';
 
 export const useLists = (boardId?: string) => {
   const queryClient = useQueryClient();
@@ -23,6 +25,13 @@ export const useLists = (boardId?: string) => {
     enabled: !!boardId || boardId === undefined,
   });
 
+  // Show error toast when query fails
+  React.useEffect(() => {
+    if (error) {
+      showErrorToast("Error", "Failed to load lists. Please try again.");
+    }
+  }, [error]);
+
   const createListMutation = useMutation({
     mutationFn: (data: CreateListData) => listsApi.create(data),
     onSuccess: () => {
@@ -32,6 +41,11 @@ export const useLists = (boardId?: string) => {
       }
       // Also invalidate all lists
       queryClient.invalidateQueries({ queryKey: ['lists'] });
+
+      showSuccessToast("Success", "List created successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to create list. Please try again.");
     },
   });
 
@@ -42,12 +56,17 @@ export const useLists = (boardId?: string) => {
       // Update the list in the cache
       queryClient.setQueryData(['lists', boardId], (old: List[] | undefined) => {
         if (!old) return old;
-        return old.map(list => 
+        return old.map(list =>
           list.id === id ? { ...list, ...response.data } : list
         );
       });
       // Also invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['lists', boardId] });
+
+      showSuccessToast("Success", "List updated successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to update list. Please try again.");
     },
   });
 
@@ -62,22 +81,51 @@ export const useLists = (boardId?: string) => {
       });
       // Also invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['lists', boardId] });
+
+      showSuccessToast("Success", "List positions updated successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to update list positions. Please try again.");
     },
   });
 
   const deleteListMutation = useMutation({
     mutationFn: (id: string) => listsApi.delete(id),
     onSuccess: (_, id) => {
+      console.log('List deleted successfully, updating cache for:', id);
+
+      // Only update cache if we have valid data
+      if (!id) {
+        console.warn('No list ID provided for cache update');
+        return;
+      }
+
+      // Remove the list from all relevant caches immediately
       queryClient.setQueryData(['lists', boardId], (old: List[] | undefined) => {
         if (!old) return old;
-        return old.filter(list => list.id !== id);
+        const filtered = old.filter(list => list.id !== id);
+        console.log('Updated lists cache:', { before: old.length, after: filtered.length });
+        return filtered;
       });
-      // Also invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['lists', boardId] });
+
+      // Also update the general lists cache
+      queryClient.setQueryData(['lists'], (old: List[] | undefined) => {
+        if (!old) return old;
+        const filtered = old.filter(list => list.id !== id);
+        console.log('Updated general lists cache:', { before: old.length, after: filtered.length });
+        return filtered;
+      });
+
+      // Invalidate all related queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      if (boardId) {
+        queryClient.invalidateQueries({ queryKey: ['lists', boardId] });
+      }
+
+      showSuccessToast("Success", "List deleted successfully!");
     },
-    onError: (error, id) => {
-      console.error('Failed to delete list:', id, error);
-      throw error; // Re-throw to be handled by the component
+    onError: (error) => {
+      showErrorToast("Error", "Failed to delete list. Please try again.");
     },
   });
 

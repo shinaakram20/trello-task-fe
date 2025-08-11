@@ -46,12 +46,19 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            My Boards
-          </h1>
-          <p className="text-gray-600">
-            Organize your work and collaborate with your team
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                My Boards
+              </h1>
+              <p className="text-gray-600">
+                Organize your work and collaborate with your team
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <a href="/sweetalert-demo">SweetAlert2 Demo</a>
+            </Button>
+          </div>
         </div>
 
 

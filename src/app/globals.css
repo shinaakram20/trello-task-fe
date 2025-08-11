@@ -130,3 +130,31 @@
 [data-slot="dialog-close"].hide-dialog-close {
   display: none !important;
 }
+
+/* SweetAlert2 Custom Styles */
+.swal2-toast {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  font-family: inherit !important;
+}
+
+.swal2-toast .swal2-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+.swal2-toast .swal2-html-container {
+  font-size: 12px !important;
+  margin: 4px 0 0 0 !important;
+}
+
+.swal2-toast .swal2-icon {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 8px 0 0 !important;
+}
+
+.swal2-toast .swal2-timer-progress-bar {
+  background: rgba(255, 255, 255, 0.3) !important;
+}

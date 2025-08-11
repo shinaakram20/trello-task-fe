@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '@/services/api';
 import { Task, CreateTaskData, UpdateTaskData } from '@/types';
+import { showSuccessToast, showErrorToast } from '@/lib/sweetalert';
+import React from 'react';
 
 export const useTasks = (listId?: string, boardId?: string) => {
   const queryClient = useQueryClient();
@@ -26,6 +28,13 @@ export const useTasks = (listId?: string, boardId?: string) => {
     enabled: !!listId || !!boardId || (listId === undefined && boardId === undefined),
   });
 
+  // Show error toast when query fails
+  React.useEffect(() => {
+    if (error) {
+      showErrorToast("Error", "Failed to load tasks. Please try again.");
+    }
+  }, [error]);
+
   const createTaskMutation = useMutation({
     mutationFn: (data: CreateTaskData) => tasksApi.create(data),
     onSuccess: () => {
@@ -39,6 +48,11 @@ export const useTasks = (listId?: string, boardId?: string) => {
       }
       // Also invalidate all tasks
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      
+      showSuccessToast("Success", "Task created successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to create task. Please try again.");
     },
   });
 
@@ -60,6 +74,11 @@ export const useTasks = (listId?: string, boardId?: string) => {
       if (boardId) {
         queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
       }
+      
+      showSuccessToast("Success", "Task updated successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to update task. Please try again.");
     },
   });
 
@@ -67,6 +86,12 @@ export const useTasks = (listId?: string, boardId?: string) => {
     mutationFn: (id: string) => tasksApi.delete(id),
     onSuccess: (_, id) => {
       console.log('Task deleted successfully, updating cache for:', id);
+      
+      // Only update cache if we have valid data
+      if (!id) {
+        console.warn('No task ID provided for cache update');
+        return;
+      }
       
       // Remove the task from all relevant caches immediately
       queryClient.setQueryData(['tasks', listId, boardId], (old: Task[] | undefined) => {
@@ -93,16 +118,10 @@ export const useTasks = (listId?: string, boardId?: string) => {
         queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
       }
       
-      // Also invalidate lists to refresh task counts
-      queryClient.invalidateQueries({ queryKey: ['lists'] });
-      if (boardId) {
-        queryClient.invalidateQueries({ queryKey: ['lists', boardId] });
-      }
+      showSuccessToast("Success", "Task deleted successfully!");
     },
-    onError: (error, id) => {
-      console.error('Failed to delete task:', id, error);
-      // Re-throw to be handled by the component
-      throw error;
+    onError: (error) => {
+      showErrorToast("Error", "Failed to delete task. Please try again.");
     },
   });
 
@@ -116,6 +135,11 @@ export const useTasks = (listId?: string, boardId?: string) => {
       if (boardId) {
         queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
       }
+      
+      showSuccessToast("Success", "Task moved successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to move task. Please try again.");
     },
   });
 
@@ -129,6 +153,11 @@ export const useTasks = (listId?: string, boardId?: string) => {
       if (boardId) {
         queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
       }
+      
+      showSuccessToast("Success", "Task position updated successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to update task position. Please try again.");
     },
   });
 
@@ -148,6 +177,11 @@ export const useTasks = (listId?: string, boardId?: string) => {
       if (boardId) {
         queryClient.invalidateQueries({ queryKey: ['tasks', boardId] });
       }
+      
+      showSuccessToast("Success", "Task positions updated successfully!");
+    },
+    onError: (error) => {
+      showErrorToast("Error", "Failed to update task positions. Please try again.");
     },
   });
 
